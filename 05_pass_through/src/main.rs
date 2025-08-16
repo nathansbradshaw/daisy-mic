@@ -56,6 +56,6 @@ mod app {
     fn audio_handler(ctx: audio_handler::Context) {
         let audio = ctx.local.audio;
 
-        audio.for_each(|left, right| (left, right));
+        audio.for_each(|left, right| (right, right));
     }
 }

@@ -95,9 +95,9 @@ mod app {
     fn audio_handler(mut ctx: audio_handler::Context) {
         let audio = ctx.local.audio;
 
-        audio.for_each(|left_in, _right_in| {
+        audio.for_each(|_left_in, right_in| {
             // Fill input buffer
-            ctx.local.input_buffer[*ctx.local.buffer_index] = left_in;
+            ctx.local.input_buffer[*ctx.local.buffer_index] = right_in;
             *ctx.local.buffer_index += 1;
 
             // Process when buffer is full
@@ -124,9 +124,11 @@ mod app {
                 if *ctx.local.output_index >= 1024 {
                     *ctx.local.frames_ready = false;
                 }
-                sample
+                log::info!("Processed sample");
+                right_in
             } else {
-                left_in // Passthrough during buffering
+                log::info!("Passthrough during buffering");
+                right_in // Passthrough during buffering
             };
 
             (output, output)
