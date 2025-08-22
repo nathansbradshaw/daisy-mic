@@ -64,11 +64,17 @@ impl<const N: usize> RingBuffer<N> {
     }
 
     pub fn add_at_offset(&self, offset: u32, val: f32) {
-        let idx = self.write.load(Ordering::Relaxed).wrapping_add(offset);
+        let idx = self.read.load(Ordering::Relaxed).wrapping_add(offset);
         unsafe {
             let cell = &mut (*self.buf.get())[idx as usize & (N - 1)];
             *cell += val;
         }
+    }
+
+    pub fn available_samples(&self) -> u32 {
+        let w = self.write.load(Ordering::Acquire);
+        let r = self.read.load(Ordering::Acquire);
+        w.wrapping_sub(r)
     }
 
     /// Copy the last `LEN` samples (oldest first) into `dest`.
