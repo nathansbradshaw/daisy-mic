@@ -1,0 +1,12 @@
+[default.general]
+chip = "STM32H750VBTx"
+
+[default.rtt]
+enabled = true
+
+[default.gdb]
+enabled = true
+gdb_connection_string = "localhost:1337"
+
+# [default.reset]
+# halt_afterwards = true

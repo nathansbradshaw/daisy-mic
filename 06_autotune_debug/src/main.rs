@@ -15,7 +15,7 @@ mod app {
     use libdaisy::logger;
     use libdaisy::{audio, system};
     use libm::{atan2f, cosf, expf, fabsf, floorf, logf, sinf, sqrtf};
-    use log::warn;
+    use log::{info, warn};
     use synthphone_vocals::frequencies::D_MAJOR_SCALE_FREQUENCIES;
     use synthphone_vocals::process_frequencies::collect_harmonics;
     use synthphone_vocals::{
@@ -87,7 +87,7 @@ mod app {
     #[idle]
     fn idle(_ctx: idle::Context) -> ! {
         loop {
-            cortex_m::asm::wfi(); // Wait for interrupt
+            cortex_m::asm::wfi(); // Wait for interrupt - saves power
         }
     }
 
@@ -109,7 +109,19 @@ mod app {
                 ctx.shared.in_ring.lock(|in_ring| in_ring.push(sample));
 
                 // Get output sample with fallback to input
-                let out_sample = ctx.shared.out_ring.lock(|out_ring| out_ring.pop());
+                let out_sample = ctx.shared.out_ring.lock(|out_ring| {
+                    let sample = out_ring.pop();
+                    if sample.abs() < 1e-6 {
+                        // If output is essentially zero, use input (underrun protection)
+                        *ctx.local.audio_underrun_count += 1;
+                        if *ctx.local.audio_underrun_count % 1000 == 0 {
+                            warn!("Audio underruns: {}", *ctx.local.audio_underrun_count);
+                        }
+                        *right * 0.2 // Very reduced gain for safety
+                    } else {
+                        sample
+                    }
+                });
 
                 // Gentle normalization to prevent clipping
                 let normalized_sample = normalize_sample(out_sample, 0.6);
@@ -167,11 +179,20 @@ mod app {
         let mut analysis_frequencies = [0.0; FFT_SIZE / 2];
         let mut _synthesis_count = [0; FFT_SIZE / 2];
 
-        // Zero out the synthesis bins, ready for new data
-        ctx.local.synthesis_magnitudes.fill(0.0);
-        ctx.local.synthesis_frequencies.fill(0.0);
-
         let write_idx = ctx.shared.in_pointer_cached.lock(|in_pointer| *in_pointer);
+
+        // Ensure we have enough data before processing
+        let available_samples = ctx.shared.in_ring.lock(|rb| rb.available_samples());
+        if available_samples < FFT_SIZE as u32 {
+            *ctx.local.fft_overflow_count += 1;
+            if *ctx.local.fft_overflow_count % 100 == 0 {
+                warn!(
+                    "FFT insufficient samples: {} (count: {})",
+                    available_samples, *ctx.local.fft_overflow_count
+                );
+            }
+            return;
+        }
 
         ctx.shared
             .in_ring
@@ -187,6 +208,7 @@ mod app {
 
         let formant = 0;
         let note = 0;
+
         let is_auto = note == 0;
 
         // ANALYSIS
@@ -214,7 +236,18 @@ mod app {
             analysis_magnitudes[i] = amplitude;
 
             // Save the phase for next hop
+
             ctx.local.last_input_phases[i] = phase;
+        }
+
+        // Zero out the synthesis bins, ready for new data
+
+        for bin in ctx.local.synthesis_magnitudes.iter_mut() {
+            *bin = 0.0;
+        }
+
+        for bin in ctx.local.synthesis_frequencies.iter_mut() {
+            *bin = 0.0;
         }
 
         let mut analysis_magnitudes_full = [0.0f32; FFT_SIZE];
@@ -276,6 +309,16 @@ mod app {
         // Exact frequency is tied to the bin.
         let exact_frequency = analysis_frequencies[fundamental_index] * BIN_WIDTH;
 
+        // Zero synthesis arrays
+
+        for bin in ctx.local.synthesis_magnitudes.iter_mut() {
+            *bin = 0.0;
+        }
+
+        for bin in ctx.local.synthesis_frequencies.iter_mut() {
+            *bin = 0.0;
+        }
+
         // We cannot divide by 0
         if exact_frequency > 0.001 {
             let scale_frequencies = &D_MAJOR_SCALE_FREQUENCIES;
@@ -289,6 +332,19 @@ mod app {
             } else {
                 get_frequency(key, note, octave, false)
             };
+
+            // Log the detected and target notes
+            let (detected_note, detected_octave) = frequency_to_note_info(exact_frequency);
+            let (target_note, target_octave) = frequency_to_note_info(target_frequency);
+            info!(
+                "Detected: {}{} ({:.1}Hz) -> Target: {}{} ({:.1}Hz)",
+                detected_note,
+                detected_octave,
+                exact_frequency,
+                target_note,
+                target_octave,
+                target_frequency
+            );
 
             let current_pitch_shift_ratio = target_frequency / exact_frequency;
             let previous_pitch_shift_ratio = *ctx.local.previous_pitch_shift_ratio;
@@ -413,6 +469,42 @@ mod app {
             sample * soft_ratio
         } else {
             sample
+        }
+    }
+
+    // Helper function to convert frequency to note info for no_std compatibility
+    fn frequency_to_note_info(frequency: f32) -> (&'static str, i32) {
+        if frequency <= 0.0 || frequency < 20.0 || frequency > 20000.0 {
+            return ("Unknown", 0);
+        }
+
+        // A4 = 440 Hz, MIDI note 69
+        let a4_freq = 440.0;
+        let a4_midi = 69.0;
+
+        // Calculate MIDI note number using libm::log2f for no_std
+        let midi_note = a4_midi + 12.0 * libm::log2f(frequency / a4_freq);
+        let note_number_raw = ((midi_note + 0.5) as i32) % 12;
+
+        // Handle negative modulo result
+        let note_number = if note_number_raw < 0 {
+            note_number_raw + 12
+        } else {
+            note_number_raw
+        };
+
+        let octave = (midi_note / 12.0) as i32 - 1;
+
+        let note_names = [
+            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+        ];
+
+        // Ensure we don't access out of bounds
+        if note_number >= 0 && note_number < 12 {
+            let note_name = note_names[note_number as usize];
+            (note_name, octave)
+        } else {
+            ("Unknown", 0)
         }
     }
 }
