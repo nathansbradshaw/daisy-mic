@@ -157,6 +157,11 @@ mod app {
         priority = 6,
     )]
     fn process_fft(mut ctx: process_fft::Context) {
+        // Formant and note controls
+        let formant = 0;
+        let note = 0;
+        let is_auto = note == 0;
+
         // START ACTUAL FFT PROCESSING
         let analysis_window_buffer: [f32; FFT_SIZE] = hann_window::HANN_WINDOW;
 
@@ -185,13 +190,10 @@ mod app {
         // Process the FFT based on the time domain input
         let fft = microfft::real::rfft_1024(&mut unwrapped_buffer);
 
-        let formant = 0;
-        let note = 0;
-        let is_auto = note == 0;
-
         // ANALYSIS
         for i in 0..fft.len() {
-            // Turn real and imaginary components into amplitude and phase
+            // Turn real and imaginary components into amplitude(magnitude) and phase (Polar form)
+            // This gives us how loud a given frequency component is in the signal
             let amplitude = sqrtf(fft[i].re * fft[i].re + fft[i].im * fft[i].im);
             let phase = atan2f(fft[i].im, fft[i].re);
 
@@ -202,10 +204,12 @@ mod app {
             // Subtract the amount of phase increment we'd expect to see based
             // on the centre frequency of this bin (2*pi*n/gFftSize) for this
             // hop size, then wrap to the range -pi to pi
+            // This calculates the theoretical center frequency, each bin represents a frequency range, not a single frequency.
             let bin_centre_frequency = 2.0 * PI * i as f32 / FFT_SIZE as f32;
             phase_diff = wrap_phase(phase_diff - bin_centre_frequency * HOP_SIZE as f32);
 
             // Find deviation from the centre frequency
+            // This lets us know where the actual frequency is relative to the center frequency of the bin.
             let bin_deviation = phase_diff * FFT_SIZE as f32 / HOP_SIZE as f32 / (2.0 * PI);
 
             // Add the original bin number to get the fractional bin where this partial belongs
