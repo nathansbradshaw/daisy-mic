@@ -360,8 +360,8 @@ mod app {
 
             // More aggressive smoothing to reduce artifacts
             let smoothing_factor = 0.98;
-            let pitch_shift_ratio = smoothing_factor * previous_pitch_shift_ratio
-                + (1.0 - smoothing_factor) * clamped_ratio;
+
+            let pitch_shift_ratio = clamped_ratio * smoothing_factor + previous_pitch_shift_ratio * (1.0 - smoothing_factor);
 
             *ctx.local.previous_pitch_shift_ratio = pitch_shift_ratio;
 
