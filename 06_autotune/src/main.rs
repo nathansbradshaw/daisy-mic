@@ -16,7 +16,8 @@ mod app {
     use libdaisy::logger;
     use libdaisy::{audio, system};
     use libm::{expf, fabsf};
-    use log::warn;
+    use log::{error, warn};
+    use synthphone_vocals::embedded::process_autotune_embedded;
     use synthphone_vocals::{AutotuneConfig, MusicalSettings};
 
     use crate::autotune::{autotune_audio, write_synthesis_output};
@@ -148,18 +149,34 @@ mod app {
         priority = 6,
     )]
     fn process_autotune(mut ctx: process_autotune::Context) {
-        let musical_settings = MusicalSettings::default();
+        let mut musical_settings = MusicalSettings::default();
+        musical_settings.octave = 0;
         let config = AutotuneConfig::default();
-        let mut unwrapped_buffer = [0.0; FFT_SIZE];
+        let mut input_buffer = [0.0; FFT_SIZE];
+        let mut synthesis_output = [0.0; FFT_SIZE];
 
         let write_idx = ctx.shared.in_pointer_cached.lock(|in_pointer| *in_pointer);
 
         ctx.shared
             .in_ring
-            .lock(|rb| rb.block_from::<FFT_SIZE>(write_idx, &mut unwrapped_buffer));
+            .lock(|rb| rb.block_from::<FFT_SIZE>(write_idx, &mut input_buffer));
+
+        // if process_autotune_embedded(
+        //     &mut input_buffer,
+        //     &mut synthesis_output,
+        //     ctx.local.last_input_phases,
+        //     ctx.local.last_output_phases,
+        //     ctx.local.previous_pitch_shift_ratio,
+        //     &config,
+        //     &musical_settings,
+        // )
+        // .is_err()
+        // {
+        //     error!("Autotune processing failed");
+        // }
 
         let synthesis_output = autotune_audio(
-            &mut unwrapped_buffer,
+            &mut input_buffer,
             ctx.local.last_input_phases,
             ctx.local.last_output_phases,
             *ctx.local.previous_pitch_shift_ratio,

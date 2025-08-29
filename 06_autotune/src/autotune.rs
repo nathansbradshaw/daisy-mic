@@ -55,9 +55,9 @@ pub fn autotune_audio(
         &analysis_magnitudes,
         &analysis_frequencies,
         is_auto,
-        note,
-        0, // key
-        0, // octave
+        settings.note,
+        settings.key,    // key
+        settings.octave, // octave
         previous_pitch_shift_ratio,
     ) {
         // Update stored ratio for next iteration
