@@ -4,7 +4,6 @@
 use rtic::app;
 
 mod autotune;
-mod ring_buffer;
 
 #[app(
     device = stm32h7xx_hal::stm32,
@@ -18,10 +17,10 @@ mod app {
     use libm::{expf, fabsf};
     use log::{error, warn};
     use synthphone_vocals::embedded::process_autotune_embedded;
+    use synthphone_vocals::ring_buffer::RingBuffer;
     use synthphone_vocals::{AutotuneConfig, MusicalSettings};
 
     use crate::autotune::{autotune_audio, write_synthesis_output};
-    use crate::ring_buffer::RingBuffer;
     pub const SAMPLE_RATE: f32 = 48_014.312;
     pub const FFT_SIZE: usize = 1024;
     pub const BUFFER_SIZE: usize = FFT_SIZE * 4;

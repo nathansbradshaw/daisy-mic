@@ -4,13 +4,10 @@ use libm::{atan2f, cosf, expf, floorf, logf, sinf, sqrtf};
 use synthphone_vocals::{
     AutotuneConfig, MusicalSettings, find_fundamental_frequency, find_nearest_note_in_key,
     frequencies::D_MAJOR_SCALE_FREQUENCIES, get_frequency, hann_window,
-    process_frequencies::collect_harmonics, wrap_phase,
+    process_frequencies::collect_harmonics, ring_buffer::RingBuffer, wrap_phase,
 };
 
-use crate::{
-    app::{BIN_WIDTH, BUFFER_SIZE, FFT_SIZE, HOP_SIZE},
-    ring_buffer::RingBuffer,
-};
+use crate::app::{BIN_WIDTH, BUFFER_SIZE, FFT_SIZE, HOP_SIZE};
 
 pub fn autotune_audio(
     unwrapped_buffer: &mut [f32; FFT_SIZE],
