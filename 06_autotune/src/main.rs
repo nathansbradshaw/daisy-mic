@@ -3,8 +3,6 @@
 
 use rtic::app;
 
-mod autotune;
-
 #[app(
     device = stm32h7xx_hal::stm32,
     peripherals = true,
@@ -14,13 +12,13 @@ mod app {
 
     use libdaisy::logger;
     use libdaisy::{audio, system};
-    use libm::{expf, fabsf};
-    use log::{error, warn};
-    use synthphone_vocals::embedded::process_autotune_embedded;
+    use log::warn;
+
+    use synthphone_vocals::embedded::{normalize_sample, write_synthesis_output};
     use synthphone_vocals::ring_buffer::RingBuffer;
     use synthphone_vocals::{AutotuneConfig, MusicalSettings};
 
-    use crate::autotune::{autotune_audio, write_synthesis_output};
+    // use crate::autotune::autotune_audio;
     pub const SAMPLE_RATE: f32 = 48_014.312;
     pub const FFT_SIZE: usize = 1024;
     pub const BUFFER_SIZE: usize = FFT_SIZE * 4;
@@ -152,7 +150,6 @@ mod app {
         musical_settings.octave = 0;
         let config = AutotuneConfig::default();
         let mut input_buffer = [0.0; FFT_SIZE];
-        let mut synthesis_output = [0.0; FFT_SIZE];
 
         let write_idx = ctx.shared.in_pointer_cached.lock(|in_pointer| *in_pointer);
 
@@ -160,21 +157,7 @@ mod app {
             .in_ring
             .lock(|rb| rb.block_from::<FFT_SIZE>(write_idx, &mut input_buffer));
 
-        // if process_autotune_embedded(
-        //     &mut input_buffer,
-        //     &mut synthesis_output,
-        //     ctx.local.last_input_phases,
-        //     ctx.local.last_output_phases,
-        //     ctx.local.previous_pitch_shift_ratio,
-        //     &config,
-        //     &musical_settings,
-        // )
-        // .is_err()
-        // {
-        //     error!("Autotune processing failed");
-        // }
-
-        let synthesis_output = autotune_audio(
+        let synthesis_output = synthphone_vocals::embedded::autotune_audio(
             &mut input_buffer,
             ctx.local.last_input_phases,
             ctx.local.last_output_phases,
@@ -186,18 +169,5 @@ mod app {
         ctx.shared.out_ring.lock(|output_ring| {
             write_synthesis_output(&synthesis_output, output_ring);
         });
-    }
-
-    #[inline(always)]
-    pub fn normalize_sample(sample: f32, target_peak: f32) -> f32 {
-        let abs_sample = fabsf(sample);
-        if abs_sample > target_peak {
-            // Soft limiting to prevent harsh clipping
-            let ratio = target_peak / abs_sample;
-            let soft_ratio = 1.0 - expf(-3.0 * ratio);
-            sample * soft_ratio
-        } else {
-            sample
-        }
     }
 }
