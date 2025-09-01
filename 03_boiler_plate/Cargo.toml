@@ -34,11 +34,15 @@ fugit = "0.3.7"
 libdaisy = { git = "https://github.com/nathansbradshaw/libdaisy-rust.git", features = [
     "log-rtt",
 ], commit = "f08c01fd8f950675c6c1051c2310c1cdf7309d8b" }
+synthphone_vocals = { path = "/home/nathan/Documents/GitHub/synthphone_vocals/", default-features = false, features = [
+    "embedded",
+] }
 
 [profile.dev]
 codegen-units = 1   # better optimizations
 debug = true        # symbols are nice and they don't increase the size in flash
 incremental = false
+lto = true          # better optimizations
 opt-level = "s"     # optimize for binary size
 
 [profile.release]
