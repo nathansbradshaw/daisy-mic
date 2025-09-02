@@ -1,5 +1,5 @@
 [target.thumbv7em-none-eabihf]
-# runner = 'arm-none-eabi-gdb'
+runner = 'probe-rs run --chip STM32H750VBTx'
 rustflags = [
     # LLD (shipped with the Rust toolchain) is used as the default linker
     "-C",

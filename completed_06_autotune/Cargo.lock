@@ -70,6 +70,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "cortex-m-log"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88c26033fe85d2c5f45a173a6dadf710db4a72eb7da81dbfb795d8d9ebfaaca7"
+dependencies = [
+ "cortex-m",
+ "cortex-m-semihosting",
+ "log",
+]
+
+[[package]]
 name = "cortex-m-rt"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -118,6 +129,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cortex-m-semihosting"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c23234600452033cc77e4b761e740e02d2c4168e11dbf36ab14a0f58973592b0"
+dependencies = [
+ "cortex-m",
+]
+
+[[package]]
 name = "critical-section"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -128,10 +148,22 @@ name = "daisy-mic"
 version = "0.1.0"
 dependencies = [
  "cortex-m",
+ "cortex-m-log",
  "cortex-m-rtic",
+ "fugit",
+ "lazy_static",
  "libdaisy",
+ "libm",
  "log",
+ "microfft",
+ "micromath",
+ "panic-halt",
+ "panic-itm",
+ "panic-rtt-target",
+ "rtt-target",
+ "stm32-fmc",
  "stm32h7xx-hal",
+ "synthphone_vocals",
 ]
 
 [[package]]
@@ -258,6 +290,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+dependencies = [
+ "spin",
+]
+
+[[package]]
 name = "libdaisy"
 version = "0.2.0"
 source = "git+https://github.com/nathansbradshaw/libdaisy-rust.git#f08c01fd8f950675c6c1051c2310c1cdf7309d8b"
@@ -276,6 +317,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "libm"
+version = "0.2.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9fbbcab51052fe104eb5e5d351cf728d30a5be1fe14d9be8a3b097481fb97de"
+
+[[package]]
 name = "lock_api"
 version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -290,6 +337,17 @@ name = "log"
 version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
+
+[[package]]
+name = "microfft"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2b6673eb0cc536241d6734c2ca45abfdbf90e9e7791c66a36a7ba3c315b76cf"
+dependencies = [
+ "cfg-if",
+ "num-complex",
+ "static_assertions",
+]
 
 [[package]]
 name = "micromath"
@@ -313,10 +371,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d5439c4ad607c3c23abf66de8c8bf57ba8adcd1f129e699851a6e43935d339d"
 
 [[package]]
+name = "num-complex"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73f88a1307638156682bada9d7604135552957b7818057dcef22705b4d509495"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "num-traits"
+version = "0.2.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
+dependencies = [
+ "autocfg",
+]
+
+[[package]]
 name = "panic-halt"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "de96540e0ebde571dc55c73d60ef407c653844e6f9a1e2fdbd40c07b9252d812"
+
+[[package]]
+name = "panic-itm"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d577d97d1b31268087b6dddf2470e6794ef5eee87d9dca7fcd0481695391a4c"
+dependencies = [
+ "cortex-m",
+]
 
 [[package]]
 name = "panic-rtt-target"
@@ -483,6 +568,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
 
 [[package]]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
 name = "stm32-fmc"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -558,6 +649,16 @@ dependencies = [
  "embedded-hal",
  "usb-device",
  "vcell",
+]
+
+[[package]]
+name = "synthphone_vocals"
+version = "0.1.1"
+source = "git+https://github.com/nathansbradshaw/synthphone_vocals.git#6d6c07177ff07fd44b6d48b4560dbe85840c93fe"
+dependencies = [
+ "cortex-m",
+ "libm",
+ "microfft",
 ]
 
 [[package]]

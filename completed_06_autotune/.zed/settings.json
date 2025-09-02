@@ -1,0 +1,13 @@
+{
+  "lsp": {
+    // Specify the LSP name as a key here.
+    "rust-analyzer": {
+      "initialization_options": {
+        "checkOnSave": {
+          "allTargets": false
+        },
+        "linkedProjects": ["Cargo.toml"]
+      }
+    }
+  }
+}

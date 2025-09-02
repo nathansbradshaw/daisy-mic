@@ -1,8 +1,5 @@
 #![no_main]
 #![no_std]
-
-use rtic::app;
-
 #[rtic::app(
     device = stm32h7xx_hal::stm32,
     peripherals = true,
@@ -29,7 +26,6 @@ mod app {
 
     #[idle]
     fn idle(_ctx: idle::Context) -> ! {
-        info!("Idle task started");
         loop {
             cortex_m::asm::nop();
         }
