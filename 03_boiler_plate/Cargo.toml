@@ -20,6 +20,10 @@ libdaisy = { git = "https://github.com/nathansbradshaw/libdaisy-rust.git", featu
     "log-rtt",
 ], commit = "f08c01fd8f950675c6c1051c2310c1cdf7309d8b" }
 
+# used for autotune but added now to speed up demo.
+synthphone_vocals = { git = "https://github.com/nathansbradshaw/synthphone_vocals.git", commit = "6d6c07177ff07fd44b6d48b4560dbe85840c93fe" }
+
+
 [profile.dev]
 codegen-units = 1   # better optimizations
 debug = true        # symbols are nice and they don't increase the size in flash

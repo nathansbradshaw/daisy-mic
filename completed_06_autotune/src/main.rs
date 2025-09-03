@@ -38,8 +38,6 @@ mod app {
         last_input_phases: [f32; FFT_SIZE],
         last_output_phases: [f32; FFT_SIZE],
         previous_pitch_shift_ratio: f32,
-        fft_overflow_count: u32,
-        audio_underrun_count: u32,
     }
 
     #[init]
@@ -65,8 +63,6 @@ mod app {
                 previous_pitch_shift_ratio: 1.0,
                 last_input_phases: [0.0; FFT_SIZE],
                 last_output_phases: [0.0; FFT_SIZE],
-                fft_overflow_count: 0,
-                audio_underrun_count: 0,
             },
             init::Monotonics(),
         )
@@ -81,7 +77,7 @@ mod app {
 
     #[task(
         binds = DMA1_STR1,
-        local = [audio, buffer, hop_counter, audio_underrun_count],
+        local = [audio, buffer, hop_counter],
         shared = [in_ring, out_ring, in_pointer_cached],
         priority = 8
     )]
@@ -136,8 +132,7 @@ mod app {
         shared = [in_ring, out_ring, in_pointer_cached],
         local = [last_input_phases,
         last_output_phases,
-        previous_pitch_shift_ratio,
-        fft_overflow_count],
+        previous_pitch_shift_ratio],
         priority = 6,
     )]
     fn process_autotune(mut ctx: process_autotune::Context) {

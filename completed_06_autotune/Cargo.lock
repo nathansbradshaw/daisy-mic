@@ -70,17 +70,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cortex-m-log"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88c26033fe85d2c5f45a173a6dadf710db4a72eb7da81dbfb795d8d9ebfaaca7"
-dependencies = [
- "cortex-m",
- "cortex-m-semihosting",
- "log",
-]
-
-[[package]]
 name = "cortex-m-rt"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -129,15 +118,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cortex-m-semihosting"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c23234600452033cc77e4b761e740e02d2c4168e11dbf36ab14a0f58973592b0"
-dependencies = [
- "cortex-m",
-]
-
-[[package]]
 name = "critical-section"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -148,20 +128,9 @@ name = "daisy-mic"
 version = "0.1.0"
 dependencies = [
  "cortex-m",
- "cortex-m-log",
  "cortex-m-rtic",
- "fugit",
- "lazy_static",
  "libdaisy",
- "libm",
  "log",
- "microfft",
- "micromath",
- "panic-halt",
- "panic-itm",
- "panic-rtt-target",
- "rtt-target",
- "stm32-fmc",
  "stm32h7xx-hal",
  "synthphone_vocals",
 ]
@@ -290,15 +259,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lazy_static"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
-dependencies = [
- "spin",
-]
-
-[[package]]
 name = "libdaisy"
 version = "0.2.0"
 source = "git+https://github.com/nathansbradshaw/libdaisy-rust.git#f08c01fd8f950675c6c1051c2310c1cdf7309d8b"
@@ -393,15 +353,6 @@ name = "panic-halt"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "de96540e0ebde571dc55c73d60ef407c653844e6f9a1e2fdbd40c07b9252d812"
-
-[[package]]
-name = "panic-itm"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d577d97d1b31268087b6dddf2470e6794ef5eee87d9dca7fcd0481695391a4c"
-dependencies = [
- "cortex-m",
-]
 
 [[package]]
 name = "panic-rtt-target"
